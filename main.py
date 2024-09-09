@@ -1,7 +1,25 @@
 import csv
+
 import requests
 from lxml import html
-import os
+from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+class LoginCredential(BaseSettings):
+    user: int
+    password: str
+
+    class Config:
+        extra = "ignore"
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+log_credential = LoginCredential()
+
 
 def login(session, login_url, login_data):
     """Логин в систему."""
@@ -67,7 +85,8 @@ def extract_data(rows):
 
 def write_to_csv(filename, header, data):
     """Запись данных в CSV файл."""
-    with open(filename, 'w', newline='', encoding='ISO-8859-1') as csvfile:
+    with open(filename, 'w', newline='',
+              encoding='ISO-8859-1') as csvfile:  # Кодинг поменял через то что символы не видело немецкий
         writer = csv.writer(csvfile)
         writer.writerow(header)
         writer.writerows(data)
@@ -78,8 +97,8 @@ def main():
     login_url = "https://zac.zillnet.de/Login.php"
     home_page_url = "https://zac.zillnet.de/index.php"
     login_data = {
-        'Customer_Number_Clear': os.getenv("USERNAME"),
-        'password': os.getenv("PASSWORD"),
+        'Customer_Number_Clear': log_credential.user,
+        'password': log_credential.password,
         'submit': 'Login'
     }
 
@@ -90,7 +109,7 @@ def main():
         if page_content:
             rows = parse_rows(page_content)
             header, data = extract_data(rows)
-            write_to_csv('home_page_zill.csv', header, data)
+            write_to_csv('home_page.csv', header, data)
 
 
 if __name__ == "__main__":
