@@ -35,6 +35,7 @@ def login(session, login_url, login_data):
 def fetch_home_page(session, home_page_url):
     """Получение защищенной страницы после логина."""
     response = session.get(home_page_url)
+    response.encoding = 'utf-8'
     if response.status_code == 200:
         return response.content
     else:
@@ -78,6 +79,7 @@ def extract_data(rows):
 
         if len(cleaned_cells) == 6:
             cleaned_cells[5] = status_number
+        print(cleaned_cells)
         data.append(cleaned_cells)
 
     return header_for_csv, data
@@ -86,14 +88,15 @@ def extract_data(rows):
 def write_to_csv(filename, header, data):
     """Запись данных в CSV файл."""
     with open(filename, 'w', newline='',
-              encoding='ISO-8859-1') as csvfile:  # Кодинг поменял через то что символы не видело немецкий
+              encoding='utf-8') as csvfile:  # Кодинг поменял через то что символы не видело немецкий
         writer = csv.writer(csvfile)
         writer.writerow(header)
-        writer.writerows(data)
+        writer.writerows(data[:-3])
     print(f"Data successfully written to '{filename}'")
 
 
 def main():
+    """Старт парса"""
     login_url = "https://zac.zillnet.de/Login.php"
     home_page_url = "https://zac.zillnet.de/index.php"
     login_data = {
